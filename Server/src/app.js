@@ -8,7 +8,19 @@ const cookieParser = require("cookie-parser");
 const apiRoutes = require("./routes");
 const errorMiddleware = require("./middleware/errorMiddleware");
 
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger");
+
 const app = express();
+
+const path = require("path");
+app.use(express.urlencoded({ extended: true }));
+
+// serve uploaded files
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"))
+);
 
 // Security Middleware
 app.use(helmet());
@@ -46,5 +58,12 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1", apiRoutes);
 // app.use(errorMiddleware);
+
+// swagger docs
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec)
+);
 
 module.exports = app;

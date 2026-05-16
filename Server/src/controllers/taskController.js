@@ -1,21 +1,16 @@
+const path = require("path");
 const Task = require("../models/Task");
 
 // create new task
 exports.createTask = async (req, res, next) => {
   try {
-    const {
-      title,
-      description,
-      status,
-      priority,
-      dueDate,
-      assignedTo,
-    } = req.body;
+    const { title, description, status, priority, dueDate, assignedTo } =
+      req.body || {};
 
     // uploaded files
     const attachments = req.files?.map((file) => ({
       fileName: file.filename,
-      filePath: file.path,
+      filePath: `/uploads/${file.filename}`,
       fileSize: file.size,
     }));
 
@@ -28,6 +23,14 @@ exports.createTask = async (req, res, next) => {
       assignedTo,
       attachments,
       createdBy: req.user._id,
+    });
+
+    // send realtime event
+    const io = req.app.get("io");
+
+    io.emit("taskCreated", {
+      message: "New task created",
+      task,
     });
 
     res.status(201).json({
@@ -61,10 +64,7 @@ exports.getTasks = async (req, res, next) => {
 
     // normal users only see their tasks
     if (req.user.role !== "admin") {
-      filter.$or = [
-        { assignedTo: req.user._id },
-        { createdBy: req.user._id },
-      ];
+      filter.$or = [{ assignedTo: req.user._id }, { createdBy: req.user._id }];
     }
 
     // sorting
@@ -148,6 +148,14 @@ exports.updateTask = async (req, res, next) => {
 
     await task.save();
 
+    // realtime update event
+    const io = req.app.get("io");
+
+    io.emit("taskUpdated", {
+      message: "Task updated",
+      task,
+    });
+
     res.status(200).json({
       success: true,
       message: "Task updated successfully",
@@ -183,10 +191,31 @@ exports.deleteTask = async (req, res, next) => {
 
     await task.deleteOne();
 
+    // realtime delete event
+    const io = req.app.get("io");
+
+    io.emit("taskDeleted", {
+      message: "Task deleted",
+      taskId: task._id,
+    });
+
     res.status(200).json({
       success: true,
       message: "Task deleted successfully",
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// download attachment
+exports.downloadAttachment = async (req, res, next) => {
+  try {
+    const { fileName } = req.params;
+
+    const filePath = path.join(__dirname, "../uploads", fileName);
+
+    res.download(filePath);
   } catch (error) {
     next(error);
   }

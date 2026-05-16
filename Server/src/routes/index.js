@@ -5,6 +5,7 @@ const router = express.Router();
 const authRoutes = require("./authRoutes");
 const userRoutes = require("./userRoutes");
 const taskRoutes = require("./taskRoutes");
+const dashboardRoutes = require("./dashboardRoutes");
 
 // auth routes
 router.use("/auth", authRoutes);
@@ -14,6 +15,9 @@ router.use("/users", userRoutes);
 
 // task routes
 router.use("/tasks", taskRoutes);
+
+// dashboard routes
+router.use("/dashboard", dashboardRoutes);
 
 router.get("/", (req, res) => {
   res.json({
