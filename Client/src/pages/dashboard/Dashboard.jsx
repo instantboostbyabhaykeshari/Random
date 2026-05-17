@@ -41,6 +41,17 @@ function Dashboard() {
   const [selectedTask, setSelectedTask] =
     useState(null);
 
+  // search state
+  const [search, setSearch] = useState("");
+
+  // status filter
+  const [statusFilter, setStatusFilter] =
+    useState("all");
+
+  // priority filter
+  const [priorityFilter, setPriorityFilter] =
+    useState("all");
+
   // fetch tasks from backend
   const fetchTasks = async () => {
     try {
@@ -83,10 +94,40 @@ function Dashboard() {
     navigate("/");
   };
 
-  // fetch tasks initially
+  // load tasks initially
   useEffect(() => {
     fetchTasks();
   }, []);
+
+  // filtered tasks
+  const filteredTasks = tasks.filter((task) => {
+
+    // search matching
+    const matchesSearch =
+      task.title
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+
+      task.description
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+    // status matching
+    const matchesStatus =
+      statusFilter === "all" ||
+      task.status === statusFilter;
+
+    // priority matching
+    const matchesPriority =
+      priorityFilter === "all" ||
+      task.priority === priorityFilter;
+
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesPriority
+    );
+  });
 
   return (
     <>
@@ -107,7 +148,7 @@ function Dashboard() {
 
           </div>
 
-          {/* buttons */}
+          {/* action buttons */}
           <div className="flex items-center gap-4">
 
             <button
@@ -129,7 +170,7 @@ function Dashboard() {
         </div>
 
         {/* stats cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
 
           {/* total tasks */}
           <div className="bg-white/10 border border-white/10 p-6 rounded-2xl">
@@ -182,7 +223,81 @@ function Dashboard() {
 
         </div>
 
-        {/* task section */}
+        {/* filters */}
+        <div className="bg-white/10 border border-white/10 p-5 rounded-2xl mb-8">
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            {/* search */}
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+              className="bg-[#1f2937] border border-white/10 p-4 rounded-xl outline-none"
+            />
+
+            {/* status filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(e.target.value)
+              }
+              className="bg-[#1f2937] border border-white/10 p-4 rounded-xl outline-none"
+            >
+
+              <option value="all">
+                All Status
+              </option>
+
+              <option value="pending">
+                Pending
+              </option>
+
+              <option value="in-progress">
+                In Progress
+              </option>
+
+              <option value="completed">
+                Completed
+              </option>
+
+            </select>
+
+            {/* priority filter */}
+            <select
+              value={priorityFilter}
+              onChange={(e) =>
+                setPriorityFilter(e.target.value)
+              }
+              className="bg-[#1f2937] border border-white/10 p-4 rounded-xl outline-none"
+            >
+
+              <option value="all">
+                All Priority
+              </option>
+
+              <option value="low">
+                Low
+              </option>
+
+              <option value="medium">
+                Medium
+              </option>
+
+              <option value="high">
+                High
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+        {/* tasks section */}
         <div>
 
           <div className="flex items-center justify-between mb-5">
@@ -193,13 +308,13 @@ function Dashboard() {
 
           </div>
 
-          {/* loading state */}
+          {/* loading */}
           {
             loading ? (
               <p className="text-gray-400">
                 Loading tasks...
               </p>
-            ) : tasks.length === 0 ? (
+            ) : filteredTasks.length === 0 ? (
               <p className="text-gray-400">
                 No tasks found
               </p>
@@ -207,7 +322,7 @@ function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 
                 {
-                  tasks.map((task) => (
+                  filteredTasks.map((task) => (
                     <TaskCard
                       key={task._id}
                       task={task}
