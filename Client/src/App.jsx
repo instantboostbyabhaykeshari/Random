@@ -1,12 +1,24 @@
-import './App.css'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import Dashboard from "./pages/dashboard/Dashboard";
 
 function App() {
   return (
-    <div className="h-screen flex items-center justify-center">
-      <h1 className="text-4xl font-bold">
-        Task Manager Frontend
-      </h1>
-    </div>
+    <BrowserRouter>
+
+      <Routes>
+
+        <Route path="/" element={<Login />} />
+
+        <Route path="/register" element={<Register />} />
+
+        <Route path="/dashboard" element={<Dashboard />} />
+
+      </Routes>
+
+    </BrowserRouter>
   );
 }
 
