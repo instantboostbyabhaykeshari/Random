@@ -6,6 +6,8 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Dashboard from "./pages/dashboard/Dashboard";
 
+import ProtectedRoute from "./routes/ProtectedRoute";
+
 function App() {
   return (
     <BrowserRouter>
@@ -16,9 +18,19 @@ function App() {
 
         <Route path="/" element={<Login />} />
 
-        <Route path="/register" element={<Register />} />
+        <Route
+          path="/register"
+          element={<Register />}
+        />
 
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
       </Routes>
 
